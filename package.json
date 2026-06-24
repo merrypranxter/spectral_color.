@@ -1,0 +1,42 @@
+{
+  "name": "spectral_color",
+  "version": "1.0.0",
+  "description": "Wavelength → RGB via CIE 1931 color-matching functions. Shared LUT primitive for spectral generators.",
+  "type": "module",
+  "main": "src/js/spectral-color.js",
+  "exports": {
+    ".": "./src/js/spectral-color.js",
+    "./naive-rainbow": "./src/js/naive-rainbow.js",
+    "./light-sources": "./src/js/light-sources.js",
+    "./shader": "./src/shaders/spectral-color.glsl"
+  },
+  "files": [
+    "src",
+    "docs",
+    "README.md",
+    "AUDIT.md"
+  ],
+  "scripts": {
+    "test": "node --test test/",
+    "parity": "node tools/parity-check.mjs",
+    "check": "node --test test/ && node tools/parity-check.mjs",
+    "lut": "node examples/02-build-lut.mjs",
+    "png": "node examples/06-export-png.mjs",
+    "demo": "node examples/05-naive-vs-spectral.mjs",
+    "serve": "node --version >/dev/null && (command -v python3 >/dev/null && python3 -m http.server 8080 || npx --yes serve -l 8080)"
+  },
+  "keywords": [
+    "spectral",
+    "color",
+    "cie-1931",
+    "wavelength",
+    "rgb",
+    "color-matching-functions",
+    "lut",
+    "webgl",
+    "glsl",
+    "srgb"
+  ],
+  "license": "MIT",
+  "sideEffects": false
+}

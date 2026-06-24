@@ -1,0 +1,47 @@
+# spectral_color — SHARED PRIMITIVE
+
+## Build This First
+
+Every spectral generator needs wavelength → RGB done right.
+
+### Core Algorithm
+
+1. Sample N wavelengths across 380–700nm
+2. Weight each by CIE 1931 x̄(λ), ȳ(λ), z̄(λ) → XYZ
+3. XYZ → linear sRGB (standard matrix) → gamma
+4. Bake `wavelengthToRGB(λ)` into 256px LUT; `spectrumToRGB(S(λ))` for full spectra
+
+### CIE 1931 CMF Fits
+
+x̄(λ) = 1.056·exp(-0.5·((λ-599.8)/37.9)²) + 0.362·exp(-0.5·((λ-442.0)/16.0)²) + 0.065·exp(-0.5·((λ-501.1)/28.3)²)
+ȳ(λ) = 0.821·exp(-0.5·((λ-568.8)/46.9)²) + 0.286·exp(-0.5·((λ-530.9)/20.3)²)
+z̄(λ) = 1.026·exp(-0.5·((λ-473.1)/21.3)²) + 0.094·exp(-0.5·((λ-570.1)/132.7)²) + 0.305·exp(-0.5·((λ-604.2)/23.4)²)
+
+### XYZ → Linear sRGB (D65)
+
+[  3.2406  -1.5372  -0.4986 ]
+[ -0.9689   1.8758   0.0415 ]
+[  0.0557  -0.2040   1.0570 ]
+
+### Gamma
+
+if V ≤ 0.0031308: Vout = 12.92·V
+else:             Vout = 1.055·V^(1/2.4) - 0.055
+
+### LUT
+
+256px 1D texture. U = (λ - 380) / 320. Each pixel = RGB for that wavelength.
+
+### API
+
+```js
+buildSpectralLUT(size=256) → Uint8Array
+wavelengthToRGB(lambda_nm) → [r, g, b] // 0-1
+spectrumToRGB(spectrum_array) → [r, g, b] // 0-1
+// spectrum_array = [{ wavelength, intensity }, ...]
+```
+
+### Gotchas
+- Use the 5/6-gaussian fits above, not the common 3-gaussian "Bruton" approximation (inaccurate below 460nm)
+- Violet (380-420nm) maps to blue+red in sRGB — physically correct (no pure violet in sRGB gamut)
+- Soft-clip out-of-gamut colors, don't hard-clamp, to preserve hue

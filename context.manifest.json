@@ -1,0 +1,38 @@
+{
+  "repo": "spectral_color",
+  "type": "shared_primitive",
+  "domain": "color_science",
+  "description": "Wavelength \u2192 RGB via CIE 1931 color-matching functions. Shared LUT primitive for all spectral generators in the Color Lab.",
+  "batch": "color_lab_lane1",
+  "consumes": [],
+  "consumed_by": [
+    "prism_dispersion",
+    "rainbow_optics",
+    "diffraction_grating",
+    "opal_play_of_color",
+    "birefringence"
+  ],
+  "archetype": "LIBRARY",
+  "tech_stack": [
+    "webgl2",
+    "glsl",
+    "vanilla_js",
+    "cie_1931"
+  ],
+  "physics_pillars": [
+    "cie_1931_color_matching",
+    "xyz_color_space",
+    "srgb_gamut",
+    "spectral_integration"
+  ],
+  "keywords": [
+    "spectral_color",
+    "cie_1931",
+    "wavelength_to_rgb",
+    "color_matching_functions",
+    "lut"
+  ],
+  "priority": 0,
+  "difficulty": "medium",
+  "status": "built"
+}

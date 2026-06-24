@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>spectral_color — CIE 1931 wavelength → RGB</title>
+<style>
+  :root { --pad: 16px 24px; }
+  body { margin: 0; background: #000; color: #ddd; font-family: ui-monospace, Menlo, monospace; }
+  h1 { font-size: 15px; font-weight: 600; margin: 0; }
+  h1 small { color: #888; font-weight: 400; }
+  section { padding: var(--pad); border-bottom: 1px solid #161616; }
+  .cap { color: #888; font-size: 12px; margin: 0 0 8px; }
+  canvas { display: block; width: 100%; image-rendering: pixelated; border-radius: 4px; }
+  #spectrum { height: 38vh; }
+  #bar { height: 40px; }
+  #compare { height: 120px; }
+  #readout { position: fixed; top: 12px; right: 16px; font-size: 13px;
+             background: #000a; padding: 4px 8px; border-radius: 4px; }
+  #swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 8px; }
+  .swatch { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+  .chip { width: 28px; height: 28px; border-radius: 4px; flex: none; box-shadow: inset 0 0 0 1px #fff2; }
+  .label { flex: 1; }
+  .hex { color: #888; }
+  .tags { color: #666; font-size: 11px; }
+</style>
+</head>
+<body>
+<section>
+  <h1>spectral_color <small>— CIE 1931 2° wavelength → sRGB, 380–700nm</small></h1>
+  <p class="tags">multi-lobe CMF fit · soft-clip gamut mapping · 256px WebGL LUT</p>
+</section>
+
+<section>
+  <p class="cap">1 — spectrum on black (luminance-weighted: brightest at 555nm, dim at the ends, like a real prism). Hover to read off wavelengths.</p>
+  <canvas id="spectrum" width="1024" height="320"></canvas>
+</section>
+
+<section>
+  <p class="cap">2 — the baked 256px LUT, full-saturation (what <code>buildSpectralLUT()</code> returns).</p>
+  <canvas id="bar" width="256" height="40"></canvas>
+</section>
+
+<section>
+  <p class="cap">3 — naive HSV rainbow (top) vs CIE 1931 spectral (bottom). Note the naive green slab and missing magenta violet.</p>
+  <canvas id="compare" width="1024" height="120"></canvas>
+</section>
+
+<section>
+  <p class="cap">4 — emission &amp; continuous sources integrated to single colors via <code>spectrumToRGB()</code>.</p>
+  <div id="swatches"></div>
+</section>
+
+<div id="readout">hover the spectrum…</div>
+<script type="module" src="src/js/main.js"></script>
+</body>
+</html>
