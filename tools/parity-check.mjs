@@ -43,13 +43,18 @@ for (const [jsName, glName] of [["CMF_X", "cmfX"], ["CMF_Y", "cmfY"], ["CMF_Z", 
   }
 }
 
-// XYZ→sRGB matrix (9 numbers). GLSL encodes the signs as +/- operators, so
-// compare sign-independent magnitudes (sorted) on both sides.
-const mags = (arr) => arr.map(Math.abs).sort((a, b) => a - b);
+// XYZ→sRGB matrix (9 coefficients). Compare SIGNED values in order so a sign
+// flip in the GLSL expression is caught — the GLSL spells signs as +/-
+// operators, so parse the sign attached to each `<coeff> * <var>` term.
 const jsMatrix = nums(js.match(/M_XYZ_TO_RGB = \[([\s\S]*?)\];/)[1]);
-const glslMatrix = nums(glsl.match(/xyzToLinearRGB[\s\S]*?return vec3\(([\s\S]*?)\);/)[1]);
-if (!approxEqual(mags(jsMatrix), mags(glslMatrix))) {
-  problems.push(`XYZ→sRGB matrix mismatch:\n  js   = [${jsMatrix}]\n  glsl = [${glslMatrix}]`);
+const glslBody = glsl.match(/xyzToLinearRGB[\s\S]*?return vec3\(([\s\S]*?)\);/)[1];
+const glslMatrix = [...glslBody.matchAll(/([+-]?)\s*(\d+\.\d+)\s*\*\s*[a-z]/g)].map(
+  ([, sign, n]) => (sign === "-" ? -1 : 1) * Number(n),
+);
+if (!approxEqual(jsMatrix, glslMatrix)) {
+  problems.push(
+    `XYZ→sRGB matrix mismatch (signed, in order):\n  js   = [${jsMatrix}]\n  glsl = [${glslMatrix}]`,
+  );
 }
 
 // Gamma constants: every magnitude used on the JS side must appear on the GLSL

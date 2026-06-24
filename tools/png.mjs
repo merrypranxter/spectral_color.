@@ -39,6 +39,12 @@ function chunk(type, data) {
  * @param {Uint8Array} rgba  length width*height*4
  */
 export function encodePNG(width, height, rgba) {
+  if (width <= 0 || height <= 0) {
+    throw new RangeError("encodePNG: width and height must be positive integers");
+  }
+  if (!rgba || rgba.length < width * height * 4) {
+    throw new RangeError("encodePNG: rgba array is too small for width*height*4");
+  }
   const sig = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 
   const ihdr = Buffer.alloc(13);

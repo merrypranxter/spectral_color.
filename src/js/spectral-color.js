@@ -91,7 +91,7 @@ function tonemap(r, g, b, luminance) {
 
   let denom = Math.max(r, g, b);
   if (luminance) denom = Math.max(denom, 1);
-  if (denom <= 0) denom = 1;
+  denom = Math.max(denom, 1e-6); // matches GLSL; avoids amplifying float noise
 
   return [
     srgbGamma(clamp01(r / denom)),
@@ -120,10 +120,12 @@ export function wavelengthToRGB(lambda, opts = {}) {
  * @param {{luminance?: boolean}} [opts]  defaults to full-saturation (vivid).
  */
 export function spectrumToRGB(spectrum, opts = {}) {
+  if (!Array.isArray(spectrum)) return [0, 0, 0];
   let X = 0, Y = 0, Z = 0;
   for (const s of spectrum) {
+    if (!s || typeof s.wavelength !== "number") continue;
     const w = s.intensity == null ? 1 : s.intensity;
-    if (w === 0) continue;
+    if (w <= 0) continue; // ignore zero and physically-invalid negative intensities
     X += cmfX(s.wavelength) * w;
     Y += cmfY(s.wavelength) * w;
     Z += cmfZ(s.wavelength) * w;
@@ -134,12 +136,14 @@ export function spectrumToRGB(spectrum, opts = {}) {
 
 /** Map a LUT/texture column index back to its wavelength. */
 export function indexToWavelength(i, size) {
+  if (size <= 1) return LAMBDA_MIN;
   return LAMBDA_MIN + (i / (size - 1)) * (LAMBDA_MAX - LAMBDA_MIN);
 }
 
-/** Map a wavelength to its normalized LUT coordinate u ∈ [0,1]. */
+/** Map a wavelength to its normalized LUT coordinate u, clamped to [0,1]
+ *  (matches the GLSL LUT sampler, which clamps u). */
 export function wavelengthToU(lambda) {
-  return (lambda - LAMBDA_MIN) / (LAMBDA_MAX - LAMBDA_MIN);
+  return clamp01((lambda - LAMBDA_MIN) / (LAMBDA_MAX - LAMBDA_MIN));
 }
 
 /**

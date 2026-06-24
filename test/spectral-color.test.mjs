@@ -135,3 +135,26 @@ test("all channels stay within [0,1]", () => {
     }
   }
 });
+
+// --- Defensive guards (from PR review) -------------------------------------
+
+test("spectrumToRGB tolerates bad input", () => {
+  assert.deepEqual(spectrumToRGB(null), [0, 0, 0]);
+  assert.deepEqual(spectrumToRGB(undefined), [0, 0, 0]);
+  // null/invalid elements and negative intensities are skipped, not crashed on.
+  const c = spectrumToRGB([null, { intensity: 1 }, { wavelength: 532, intensity: -5 }, GREEN_LASER[0]]);
+  assert.equal(dominant(c), "g");
+});
+
+test("indexToWavelength / wavelengthToU are NaN-safe and clamped", () => {
+  assert.equal(indexToWavelength(0, 1), 380);   // size<=1 → no divide-by-zero
+  assert.ok(!Number.isNaN(indexToWavelength(0, 1)));
+  assert.equal(wavelengthToU(300), 0);          // clamped, as JSDoc promises
+  assert.equal(wavelengthToU(900), 1);
+});
+
+test("blackbodySpectrum(<=0 K) returns a dark, finite spectrum", () => {
+  const s = blackbodySpectrum(0);
+  assert.ok(s.length > 0);
+  assert.ok(s.every((p) => p.intensity === 0 && Number.isFinite(p.wavelength)));
+});

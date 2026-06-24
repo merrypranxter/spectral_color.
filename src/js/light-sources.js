@@ -68,6 +68,12 @@ export function flatSpectrum(step = 5) {
  * @param {number} [step=5]  sampling step in nm
  */
 export function blackbodySpectrum(tempK, step = 5) {
+  if (tempK <= 0) {
+    // Below 0 K is unphysical; return a dark spectrum instead of NaN/negatives.
+    const out = [];
+    for (let l = LAMBDA_MIN; l <= LAMBDA_MAX; l += step) out.push({ wavelength: l, intensity: 0 });
+    return out;
+  }
   const h = 6.626e-34; // Planck
   const c = 2.998e8;   // speed of light
   const k = 1.381e-23; // Boltzmann
@@ -85,8 +91,9 @@ export function blackbodySpectrum(tempK, step = 5) {
 /** Gaussian emission bump (e.g. a phosphor or filtered band) centered at λ0. */
 export function gaussianBand(center, width, step = 2) {
   const out = [];
+  const w = width <= 0 ? 1e-3 : width; // avoid divide-by-zero / NaN on width<=0
   for (let l = LAMBDA_MIN; l <= LAMBDA_MAX; l += step) {
-    const t = (l - center) / width;
+    const t = (l - center) / w;
     out.push({ wavelength: l, intensity: Math.exp(-0.5 * t * t) });
   }
   return out;
